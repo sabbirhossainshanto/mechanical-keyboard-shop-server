@@ -6,7 +6,7 @@ import { productController } from './product.controller';
 const router = express.Router();
 
 router.post(
-  '/create-academic-faculty',
+  '/create-product',
   validateRequest(productValidationSchema),
   productController.createProduct,
 );

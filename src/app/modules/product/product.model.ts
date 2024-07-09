@@ -8,30 +8,34 @@ const productSchema = new Schema<TProducts>(
       required: true,
       unique: true,
     },
+    description: {
+      type: String,
+      required: true,
+    },
+
     image: {
       type: String,
       required: true,
-      unique: true,
     },
     brand: {
       type: String,
       required: true,
-      unique: true,
     },
     price: {
       type: Number,
       required: true,
-      unique: true,
     },
     availableQuantity: {
       type: Number,
       required: true,
-      unique: true,
     },
     rating: {
       type: Number,
       required: true,
-      unique: true,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
     },
   },
   {
