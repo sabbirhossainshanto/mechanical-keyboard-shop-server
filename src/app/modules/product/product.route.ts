@@ -1,13 +1,14 @@
 import express from 'express';
 
 import validateRequest from '../../middlewares/validateRequest';
-import productValidationSchema from './product.validation';
+
 import { productController } from './product.controller';
+import { productValidation } from './product.validation';
 const router = express.Router();
 
 router.post(
   '/create-product',
-  validateRequest(productValidationSchema),
+  validateRequest(productValidation.createProductValidationSchema),
   productController.createProduct,
 );
 
@@ -15,10 +16,11 @@ router.get('/', productController.getAllProducts);
 
 router.get('/:productId', productController.getSingleProduct);
 
-router.patch(
+router.put(
   '/:productId',
-  validateRequest(productValidationSchema),
+  validateRequest(productValidation.updateProductValidationSchema),
   productController.updateSingleProduct,
 );
+router.delete('/:productId', productController.deleteSingleProduct);
 
 export const productRoutes = router;

@@ -1,8 +1,12 @@
 import { z } from 'zod';
 
-const orderValidationSchema = z.object({
+const createOrderValidationSchema = z.object({
   body: z.object({
-    productId: z.string({ invalid_type_error: 'Product id must be a string' }),
+    product: z.string({ invalid_type_error: 'Product must be a string' }),
+    name: z.string({ invalid_type_error: 'Name must be a string' }),
+    email: z.string({ invalid_type_error: 'Email must be a string' }),
+    address: z.string({ invalid_type_error: 'Address must be a string' }),
+    phone: z.string({ invalid_type_error: 'Phone must be a string' }),
     quantity: z.number({
       invalid_type_error: 'Quantity must be a number',
     }),
@@ -10,4 +14,6 @@ const orderValidationSchema = z.object({
   }),
 });
 
-export default orderValidationSchema;
+export const orderValidation = {
+  createOrderValidationSchema,
+};
