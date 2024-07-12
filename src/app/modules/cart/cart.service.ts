@@ -15,24 +15,28 @@ const createBookmarkProductIntoDB = async (payload: TCart) => {
       'This product is already deleted',
     );
   }
-  const isOrderExist = await Cart.findOne({ productId: payload.product });
+  if (isProductExist?.availableQuantity < payload.quantity) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Insufficient product quantity!');
+  }
+
+  const isBookmarkExist = await Cart.findOne({ product: payload.product });
 
   if (
-    isOrderExist &&
-    isProductExist?.availableQuantity < isOrderExist?.quantity
+    isBookmarkExist &&
+    isProductExist?.availableQuantity < isBookmarkExist?.quantity
   ) {
     throw new AppError(httpStatus.BAD_REQUEST, 'Insufficient order quantity');
   }
 
-  if (isOrderExist) {
-    const existQuantity = isOrderExist.quantity;
-    const newOrder = await Cart.findOneAndUpdate(
-      { productId: isOrderExist.product },
+  if (isBookmarkExist) {
+    const existQuantity = isBookmarkExist.quantity;
+    const newBookmark = await Cart.findOneAndUpdate(
+      { product: isBookmarkExist.product },
       {
         quantity: existQuantity + payload.quantity,
       },
     );
-    return newOrder;
+    return newBookmark;
   }
 
   const result = await Cart.create(payload);
@@ -51,15 +55,23 @@ const getSingleBookmarkFromDB = async (id: string) => {
 };
 
 const deleteSingleBookmarkFromDB = async (id: string) => {
-  const result = await Cart.findOneAndDelete({ _id: id });
+  const isBookmarkExist = await Cart.findById(id);
+
+  if (!isBookmarkExist) {
+    throw new AppError(httpStatus.NOT_FOUND, 'This cart product is not found!');
+  }
+  const result = await Cart.findByIdAndDelete(id);
   return result;
 };
 const updateSingleBookmarkFromDB = async (
   id: string,
   payload: { quantity: number; type: 'plus' | 'minus' },
 ) => {
+  const isBookmarkExist = await Cart.findById(id);
 
- 
+  if (!isBookmarkExist) {
+    throw new AppError(httpStatus.NOT_FOUND, 'This cart product is not found!');
+  }
   const result = await Cart.findByIdAndUpdate(id, {
     $inc: {
       quantity:
@@ -67,7 +79,6 @@ const updateSingleBookmarkFromDB = async (
     },
   });
 
-  
   return result;
 };
 

@@ -24,6 +24,16 @@ const getAllProductsFromDB = async (query: Record<string, unknown>) => {
 };
 
 const getSingleProductFromDB = async (id: string) => {
+  const isProductExist = await Product.findById(id);
+  if (!isProductExist) {
+    throw new AppError(httpStatus.NOT_FOUND, 'This product is not exist');
+  }
+  if (isProductExist.isDeleted) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'This product is already deleted',
+    );
+  }
   const result = await Product.findById(id);
   return result;
 };
