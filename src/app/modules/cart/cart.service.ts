@@ -32,14 +32,8 @@ const createBookmarkProductIntoDB = async (payload: TCart) => {
         quantity: existQuantity + payload.quantity,
       },
     );
-    await Product.findByIdAndUpdate(payload.product, {
-      $inc: { availableQuantity: -payload.quantity },
-    });
     return newOrder;
   }
-  await Product.findByIdAndUpdate(payload.product, {
-    $inc: { availableQuantity: -payload.quantity },
-  });
 
   const result = await Cart.create(payload);
 
@@ -64,12 +58,16 @@ const updateSingleBookmarkFromDB = async (
   id: string,
   payload: { quantity: number; type: 'plus' | 'minus' },
 ) => {
+
+ 
   const result = await Cart.findByIdAndUpdate(id, {
     $inc: {
       quantity:
         payload.type === 'minus' ? -payload.quantity : +payload.quantity,
     },
   });
+
+  
   return result;
 };
 

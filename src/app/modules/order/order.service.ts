@@ -3,23 +3,44 @@ import AppError from '../../errors/AppError';
 import { Product } from '../product/product.model';
 import { TOrder } from './order.interface';
 import { Order } from './order.model';
+import { Cart } from '../cart/cart.model';
 
 const createOrderIntoDB = async (payload: TOrder) => {
-  const isProductExist = await Product.findById(payload.product);
-  if (!isProductExist) {
-    throw new AppError(httpStatus.NOT_FOUND, 'This product is not exist');
+  const productIds = payload.product.map((p) => p.productId);
+  const products = await Product.find({ _id: { $in: productIds } });
+
+  if (products.length !== payload.product.length) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Invalid product id!');
   }
-  if (isProductExist.isDeleted) {
-    throw new AppError(httpStatus.NOT_FOUND, 'This product is already deleted');
-  }
-  if (isProductExist.availableQuantity < payload.quantity) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Insufficient product quantity');
-  }
-  await Product.findByIdAndUpdate(isProductExist._id, {
-    $inc: { availableQuantity: -payload.quantity },
+  products.forEach((product) => {
+    const payloadProduct = payload.product.find(
+      (p) => p.productId === product._id,
+    );
+
+    if (product.isDeleted) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        `${product.name} is already deleted`,
+      );
+    }
+
+    if (payloadProduct && product.availableQuantity < payloadProduct.quantity) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Insufficient product quantity');
+    }
   });
-  const result = await Order.create(payload);
-  return result;
+
+  const order = await Order.create(payload);
+
+  await Promise.all(
+    payload.product.map(async (p) => {
+      await Product.findByIdAndUpdate(p.productId, {
+        $inc: { availableQuantity: -p.quantity },
+      });
+      await Cart.findByIdAndDelete(p.cartProductId);
+    }),
+  );
+
+  return order;
 };
 
 export const orderService = {
